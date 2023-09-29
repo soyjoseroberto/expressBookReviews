@@ -34,14 +34,39 @@ const authenticatedUser = (username, password) => {
 
 //only registered users can login
 regd_users.post("/login", (req, res) => {
-  //Write your code here
-  return res.status(300).json({ message: "Yet to be implemented" });
+  const user = req.body.user;
+    if (!user) {
+        return res.status(404).json({message: "Body Empty"});
+    }
+    // Check if user is authenticated
+    // const isAuth = authenticatedUser(user.username, user.password);
+    // if (isAuth) {
+      let accessToken = jwt.sign({
+        data: user
+      }, 'access', { expiresIn: 60 * 60 });
+
+      console.log("Assigning authorization");
+      req.session.authorization = {
+        accessToken
+      }
+    // }
+    
+    return res.status(200).send("User successfully logged in");
 });
 
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
-  //Write your code here
-  return res.status(300).json({ message: "Yet to be implemented" });
+  // Get the user from authenticated request
+  const user = req.user.data;
+  // Get book isbn
+  const isbn = parseInt(req.params.isbn);
+  // Get review from payload
+  const review = req.query.review;
+  // Compare is user already has an existing review for specific book isbn
+  // if (books[isbn].reviews[user.username]) {}
+  books[isbn].reviews[user.username] = review;
+  // If so, override with new review from payload, it not, add it to reviews for book
+  return res.status(200).json(books[isbn]);
 });
 
 module.exports.authenticated = regd_users;
